@@ -27,23 +27,52 @@ const app = new Clarifai.App({
 
 class App extends Component {
   state = {
-    input: ""
+    input: "",
+    imageURL: "",
+    box: {}
   };
 
-  onInputChange = event => {};
+  calculateFaceLocation = data => {
+    const clarifaiFace =
+      data.outputs[0].data.regions[0].region_info.bounding_box;
+    const image = document.querySelector("#inputImage");
+    const width = Number(image.width);
+    const height = Number(image.height);
+    return {
+      leftCol: clarifaiFace.left_col * width,
+      topRow: clarifaiFace.top_row * height,
+      rightCol: width - clarifaiFace.right_col * width,
+      bottomRow: height - clarifaiFace.bottom_row * height
+    };
+  };
+
+  displayFaceBox = box => {
+    this.setState({ box });
+  };
+
+  onInputChange = event => {
+    this.setState({
+      input: event.target.value
+    });
+  };
 
   onButtonSubmit = () => {
-    console.log("Click!");
+    const { input } = this.state;
+    this.setState(state => {
+      return {
+        imageURL: state.input
+      };
+    });
     app.models
-      .predict(
-        Clarifai.COLOR_MODEL,
-        "https://samples.clarifai.com/metro-north.jpg"
-      )
-      .then(response => console.log(response))
+      .predict(Clarifai.FACE_DETECT_MODEL, input)
+      .then(response => {
+        this.calculateFaceLocation(response);
+      })
       .catch(error => console.error(error));
   };
 
   render() {
+    const { imageURL } = this.state;
     return (
       <div className="App">
         <Particles className="particles" params={particlesOptions} />
@@ -54,7 +83,7 @@ class App extends Component {
           onInputChange={this.onInputChange}
           onButtonSubmit={this.onButtonSubmit}
         />
-        <FaceRecognition />
+        <FaceRecognition imageURL={imageURL} />
       </div>
     );
   }
