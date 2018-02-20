@@ -33,7 +33,14 @@ class App extends Component {
     imageURL: "",
     box: {},
     route: "signin",
-    isSignedIn: false
+    isSignedIn: false,
+    user: {
+      id: "",
+      email: "",
+      name: "",
+      entries: 0,
+      joined: ""
+    }
   };
 
   componentDidMount() {
@@ -88,6 +95,18 @@ class App extends Component {
     this.setState({ route });
   };
 
+  loadUser = user => {
+    this.setState({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        entries: user.entries,
+        joined: user.joined
+      }
+    });
+  };
+
   render() {
     const { imageURL, box, isSignedIn, route } = this.state;
     return (
@@ -100,7 +119,10 @@ class App extends Component {
         {route === "home" ? (
           <div>
             <Logo />
-            <Rank />
+            <Rank
+              name={this.state.user.name}
+              entries={this.state.user.entries}
+            />
             <ImageLinkForm
               onInputChange={this.onInputChange}
               onButtonSubmit={this.onButtonSubmit}
@@ -108,11 +130,14 @@ class App extends Component {
             <FaceRecognition box={box} imageURL={imageURL} />
           </div>
         ) : route === "signin" ? (
-          <Signin onRouteChange={this.onRouteChange} />
+          <Signin onRouteChange={this.onRouteChange} loadUser={this.loadUser} />
         ) : route === "signout" ? (
           <Signin onRouteChange={this.onRouteChange} />
         ) : (
-          <Register onRouteChange={this.onRouteChange} />
+          <Register
+            onRouteChange={this.onRouteChange}
+            loadUser={this.loadUser}
+          />
         )}
       </div>
     );
